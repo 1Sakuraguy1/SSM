@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <context id="MysqlContext" defaultModelType="flat">
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>
+        <!-- (0)model中数据属性的修改-->
+        <!--【1】plugin中修改-->
+        <!--{1}在model中添加HashCode（现在我不用）-->
+        <!--        <plugin type="org.mybatis.generator.plugins.EqualsHashCodePlugin"/>-->
+        <!--{2}在model中添加自动生成序列化（现在我不用）-->
+        <!--        <plugin type="org.mybatis.generator.plugins.SerializablePlugin" />-->
+        <!--{3}在model中添加toString-->
+        <plugin type="org.mybatis.generator.plugins.ToStringPlugin" />
+
+        <!--【2】commentGenerator中的修改
+               注意：1property： value="true”表示改标签的效果关闭-->
+        <commentGenerator>
+            <!--{1}是否去除自动生成的注释（关闭）  -->
+            <property name="suppressAllComments" value="true" />
+            <!--{2}阻止注释中包含时间戳（关闭）-->
+            <property name="suppressDate" value="true" />
+            <!--{3}注释是否包含数据库表的注释信息-->
+            <property name="addRemarkComments" value="false" />
+        </commentGenerator>
+
+        <!--  不生成注释  -->
+        <!--(1)配置数据库驱动、所选择数据库、用户名密码等信息  -->
+        <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+                        connectionURL="jdbc:mysql://localhost:3307/ssm_crud?serverTimezone=UTC"
+                        userId="root"
+                        password="123456">
+        </jdbcConnection>
+        <!-- (2)是否使用bigDecimal， false可自动转化以下类型（Long, Integer, Short, etc.）  -->
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value=" false"/>
+        </javaTypeResolver>
+
+        <!-- (3)实体类生成的地方  -->
+        <!--  是否在当前路径下新加一层  -->
+        <!--  是否针对string类型的字段在set的时候进行trim调用  -->
+        <javaModelGenerator targetPackage="com.atmiao.bean" targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- (4)映像Mapper.xml生成的地方  -->
+        <!--  是否在当前路径下新加一层  -->
+        <sqlMapGenerator targetPackage="com/atmiao/mapper" targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!--  (5)dao/mapper生成的地方  -->
+        <!--  是否在当前路径下新加一层  -->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.atmiao.mapper" targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!--  (6)根据数据库的表和生成>>>java中的实体名  -->
+        <table tableName="tbl_emp"
+               domainObjectName="Employee">
+        </table>
+
+        <table tableName="tbl_dept" domainObjectName="Department"></table>
+
+    </context>
+
+</generatorConfiguration>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+<!--    扫描组件-->
+    <context:component-scan base-package="com.atmiao">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+<!--    &lt;!&ndash;配置视图解析器 jsp&ndash;&gt;-->
+<!--    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">-->
+<!--        <property name="suffix" value=".jsp"></property>-->
+<!--        <property name="prefix" value="/WEB-INF/templates/"></property>-->
+<!--    </bean>-->
+
+
+<!--    引入jdbc.prooerties-->
+    <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+
+
+    <!-- 配置数据源 -->
+    <bean id="druidDataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+
+    <!-- 配置事务管理器 -->
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="druidDataSource"></property>
+    </bean>
+    <!--
+           开启事务的注解驱动
+           将使用注解@Transactional标识的方法或类中所有的方法进行事务管理
+        -->
+    <tx:annotation-driven transaction-manager="transactionManager"></tx:annotation-driven>
+
+    <!-- 配置SqlSessionFactoryBean，可以直接在Spring的IOC中获取SqlSessionFactory -->
+
+    <bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 设置MyBatis的核心配置文件的路径 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <!-- 设置数据源 -->
+        <property name="dataSource" ref="druidDataSource" />
+        <!-- 设置类型别名所对应的包 -->
+<!--        <property name="typeAliases" value="com.atmiao.bean"></property>-->
+        <!-- 设置映射文件的路径，只有映射文件的包和mapper接口的包不一致时需要设置 -->
+<!--        <property name="mapperLocations" value="classpath:mapper/*.xml"></property>-->
+
+    </bean>
+
+<!--    配置一个可以批量添加的sqlSession-->
+    <bean class="org.mybatis.spring.SqlSessionTemplate" id="sqlSession">
+        <constructor-arg name="sqlSessionFactory" ref="sessionFactory">
+        </constructor-arg>
+        <constructor-arg name="executorType" value="BATCH"></constructor-arg>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" >
+<!--        扫描所有mapper实现加入到ioc容器-->
+        <property name="basePackage" value="com.atmiao.mapper"></property>
+    </bean>
+
+    <aop:config >
+        <aop:pointcut expression="execution(* com.atmiao.service..*(..))" id="pointctut"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointctut"></aop:advisor>
+    </aop:config>
+
+<!--  ==================   配置事务增强,事务如何切入 ==========-->
+    <tx:advice id="txAdvice">
+        <tx:attributes>
+            <tx:method name="*"/>
+            <tx:method name="get*" read-only="true"/>
+        </tx:attributes>
+
+    </tx:advice>
+
+
+    <!--
+            配置mapper接口的扫描，可以将指定包下所有的mapper接口
+            通过SqlSession创建代理实现类对象，并将这些对象交给IOC容器管理
+         -->
+     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+         <property name="basePackage" value="com.atmiao.mapper"></property>
+     </bean>
+
+
+
+</beans>
